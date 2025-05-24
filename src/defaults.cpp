@@ -57,11 +57,11 @@ const config_t default_config = {
     },
     /* .force_mouse_boot_mode = */ false,
     /* .force_kbd_boot_protocol = */ false,
-    /* .kbd_led_as_indicator = */ KEYBOARD_INDICATOR_LED,
-    /* .hotkey_toggle = */ ENABLE_HOTKEY_TOGGLE,
-    /* .enable_acceleration = */ ENABLE_ACCELERATION,
+    /* .kbd_led_as_indicator = */ KBD_LED_AS_INDICATOR,
+    /* .hotkey_toggle = */ 1, // Default to enabled
+    /* .enable_acceleration = */ 1, // Default to enabled
     /* .enforce_ports = */ ENFORCE_PORTS,
-    /* .jump_threshold = */ JUMP_THRESHOLD,
+    /* .jump_threshold = */ 5, // Default value
     /* ._reserved = */ 0,
     /* .checksum = */ 0,
 };
