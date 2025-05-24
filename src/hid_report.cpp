@@ -88,48 +88,48 @@ void filter_bit_values(report_val_t *src, uint8_t *report, int len) {
     }
 }
 
+// Helper function to extract value directly from descriptor
+static void _store(report_val_t *src, report_val_t *dst, hid_interface_t *iface) {
+    *dst = *src;
+    iface->uses_report_id |= (src->report_id > 0);
+}
+
+// Handle button bit for the mouse button array
+static void handle_button_bit(report_val_t *src, report_val_t *dst, hid_interface_t *iface) {
+    _store(src, dst, iface);
+}
+
+// Extract keyboard data values
+static void handle_keyboard_descriptor_values(report_val_t *src, report_val_t *dst, hid_interface_t *iface) {
+    if (src->usage_page == HID_USAGE_PAGE_KEYBOARD) {
+        if (src->data_type == VARIABLE) {
+            _store(src, &iface->keyboard.modifier, iface);
+            iface->keyboard.is_found = true;
+        }
+        else if (src->data_type == ARRAY) {
+            // Calculate key press count
+            _store(src, &iface->keyboard.nkro, iface);
+            iface->keyboard.is_found = true;
+            iface->keyboard.is_nkro = false;
+        }
+
+        /* Remember the report ID for sending responses back */
+        iface->keyboard.report_id = src->report_id;
+    }
+}
+
+// Handle consumer control values
+static void handle_consumer_control_values(report_val_t *src, report_val_t *dst, hid_interface_t *iface) {
+    if (src->usage_page == HID_USAGE_PAGE_CONSUMER) {
+        _store(src, dst, iface);
+        iface->consumer.is_variable = (src->data_type == VARIABLE);
+        iface->consumer.is_array = (src->data_type == ARRAY);
+        iface->consumer.report_id = src->report_id;
+    }
+}
+
 /* Choose what values from the report to extract, based on the HID usage info */
 void extract_data(hid_interface_t *iface, report_val_t *val) {
-    /* Define a static function to extract the value directly from the descriptor */
-    static void _store(report_val_t *src, report_val_t *dst, hid_interface_t *iface) {
-        *dst = *src;
-        iface->uses_report_id |= (src->report_id > 0);
-    }
-
-    /* Mark button bit as found for the button array */
-    static void handle_button_bit(report_val_t *src, report_val_t *dst, hid_interface_t *iface) {
-        _store(src, dst, iface);
-    }
-
-    /* Extract keyboard data values */
-    static void handle_keyboard_descriptor_values(report_val_t *src, report_val_t *dst, hid_interface_t *iface) {
-        if (src->usage_page == HID_USAGE_PAGE_KEYBOARD) {
-            if (src->data_type == VARIABLE) {
-                _store(src, &iface->keyboard.modifier, iface);
-                iface->keyboard.is_found = true;
-            }
-
-            else if (src->data_type == ARRAY) {
-                // Calculate key press count
-                _store(src, &iface->keyboard.nkro, iface);
-                iface->keyboard.is_found = true;
-                iface->keyboard.is_nkro = false;
-            }
-
-            /* Remember the report ID for sending responses back */
-            iface->keyboard.report_id = src->report_id;
-        }
-    }
-
-    static void handle_consumer_control_values(report_val_t *src, report_val_t *dst, hid_interface_t *iface) {
-        if (src->usage_page == HID_USAGE_PAGE_CONSUMER) {
-            _store(src, dst, iface);
-            iface->consumer.is_variable = (src->data_type == VARIABLE);
-            iface->consumer.is_array = (src->data_type == ARRAY);
-            iface->consumer.report_id = src->report_id;
-        }
-    }
-
     /* Create an array of complex HID value mappings */
     const usage_map_t map[] = {
         /* Map mouse buttons */
@@ -270,9 +270,12 @@ int32_t extract_bit_variable(report_val_t *val, uint8_t *report, int len, uint8_
     if (report_id)
         *report_id = val->report_id;
 
-    /* The data offset has to be adjusted if a report ID is included */
-    uint16_t offset = (val->report_id > 0) ? val->offset + 8 : val->offset;
+    // Adjust offset for report ID (used variable must match warning fix)
+    report_val_t adjusted_val = *val;
+    if (val->report_id > 0) {
+        adjusted_val.offset += 8;
+    }
 
     /* Do the actual extraction */
-    return get_report_value(report, len, val);
+    return get_report_value(report, len, &adjusted_val);
 }
