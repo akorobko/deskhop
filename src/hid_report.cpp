@@ -29,166 +29,196 @@ int32_t get_report_value(uint8_t *report, int len, report_val_t *val) {
     /* Create a mask for the specified number of bits */
     uint32_t mask = (1u << val->size) - 1;
 
-    /* Initialize the result value with the bits from the first byte */
-    int32_t result = report[byte_offset] >> offset_in_bits;
-
-    /* Move to the next byte and continue fetching bits until the desired length is reached */
-    while (val->size > remaining_bits) {
-        result |= report[++byte_offset] << remaining_bits;
-        remaining_bits += 8;
+    /* If the entire value is contained within a single byte */
+    if (val->size <= remaining_bits) {
+        /* Extract the bits from the report */
+        uint32_t v = (report[byte_offset] >> offset_in_bits) & mask;
+        return v;
     }
 
-    /* Apply the mask to retain only the desired number of bits */
-    result = result & mask;
+    /* The value spans multiple bytes */
+    uint32_t result = 0;
+    uint32_t total_bits_processed = 0;
 
-    /* Special case if our result is negative.
-       Check if the most significant bit of 'val' is set */
-    if (result & ((mask >> 1) + 1)) {
-        /* If it is set, sign-extend 'val' by filling the higher bits with 1s */
-        result |= (0xFFFFFFFFU << val->size);
+    /* Process the first byte */
+    result |= (report[byte_offset] >> offset_in_bits) & ((1u << remaining_bits) - 1);
+    total_bits_processed += remaining_bits;
+
+    /* Process the middle bytes */
+    while (total_bits_processed + 8 <= val->size) {
+        byte_offset++;
+        if (byte_offset >= len) return result;
+
+        result |= (uint32_t)report[byte_offset] << total_bits_processed;
+        total_bits_processed += 8;
+    }
+
+    /* Process the last byte if there are any bits left */
+    if (total_bits_processed < val->size) {
+        byte_offset++;
+        if (byte_offset >= len) return result;
+
+        uint32_t remaining = val->size - total_bits_processed;
+        uint32_t last_byte_bits = report[byte_offset] & ((1u << remaining) - 1);
+        result |= last_byte_bits << total_bits_processed;
     }
 
     return result;
 }
 
-/* After processing the descriptor, assign the values so we can later use them to interpret reports */
-void handle_consumer_control_values(report_val_t *src, report_val_t *dst, hid_interface_t *iface) {
-    if (src->offset > MAX_CC_BUTTONS) {
+void filter_bit_values(report_val_t *src, uint8_t *report, int len) {
+    /* If the report is not in variable mode, we need to handle it differently */
+    if (src->data_type != VARIABLE) {
+        for (int i = 0; i < src->usage_max - src->usage_min + 1; i++) {
+            int32_t usage_n = get_report_value(report, len, src);
+            if (i < usage_n)
+                TU_LOG1("Usage %d\r\n", src->usage_min + i);
+        }
         return;
     }
 
-    if (src->data_type == VARIABLE) {
-        iface->keyboard.cc_array[src->offset] = src->usage;
-        iface->consumer.is_variable = true;
-    }
+    /* For variable data */
+    uint32_t value = get_report_value(report, len, src);
 
-    iface->consumer.is_array |= (src->data_type == ARRAY);
+    /* Iterate through all the bits */
+    for (uint32_t i = 0; i < src->size; i++) {
+        if (value & (1 << i)) {
+            TU_LOG1("Usage %d\r\n", src->usage_min + i);
+        }
+    }
 }
 
-/* After processing the descriptor, assign the values so we can later use them to interpret reports */
-void handle_system_control_values(report_val_t *src, report_val_t *dst, hid_interface_t *iface) {
-    if (src->offset > MAX_SYS_BUTTONS) {
-        return;
-    }
-
-    if (src->data_type == VARIABLE) {
-        iface->keyboard.sys_array[src->offset] = src->usage;
-        iface->system.is_variable = true;
-    }
-
-    iface->system.is_array |= (src->data_type == ARRAY);
-}
-
-/* After processing the descriptor, assign the values so we can later use them to interpret reports */
-void handle_keyboard_descriptor_values(report_val_t *src, report_val_t *dst, hid_interface_t *iface) {
-    const int LEFT_CTRL = 0xE0;
-
-    /* Constants are normally used for padding, so skip'em */
-    if (src->item_type == CONSTANT)
-        return;
-
-    /* Detect and handle modifier keys. <= if modifier is less + constant padding? */
-    if (src->size <= MODIFIER_BIT_LENGTH && src->data_type == VARIABLE) {
-        /* To make sure this really is the modifier key, we expect e.g. left control to be
-           within the usage interval */
-        if (LEFT_CTRL >= src->usage_min && LEFT_CTRL <= src->usage_max)
-            iface->keyboard.modifier = *src;
-    }
-
-    /* If we have an array member, that's most likely a key (0x00 - 0xFF, 1 byte) */
-    if (src->offset_idx < MAX_KEYS) {
-        iface->keyboard.key_array[src->offset_idx] = (src->data_type == ARRAY);
-    }
-
-    /* Handle NKRO, normally size = 1, count = 240 or so, but they are swapped. */
-    if (src->size > 32 && src->data_type == VARIABLE) {
-        iface->keyboard.is_nkro = true;
-        iface->keyboard.nkro    = *src;
-    }
-
-    /* We found a keyboard on this interface. */
-    iface->keyboard.is_found = true;
-}
-
-void handle_buttons(report_val_t *src, report_val_t *dst, hid_interface_t *iface) {
-    /* Constant is normally used for padding with mouse buttons, aggregate to simplify things */
-    if (src->item_type == CONSTANT) {
-        iface->mouse.buttons.size += src->size;
-        return;
-    }
-
-    iface->mouse.buttons = *src;
-
-    /* We found a mouse on this interface. */
-    iface->mouse.is_found = true;
-}
-
-void _store(report_val_t *src, report_val_t *dst, hid_interface_t *iface) {
-    if (src->item_type != CONSTANT)
-        *dst = *src;
-}
-
-
+/* Choose what values from the report to extract, based on the HID usage info */
 void extract_data(hid_interface_t *iface, report_val_t *val) {
+    /* Define a static function to extract the value directly from the descriptor */
+    static void _store(report_val_t *src, report_val_t *dst, hid_interface_t *iface) {
+        *dst = *src;
+        iface->uses_report_id |= (src->report_id > 0);
+    }
+
+    /* Mark button bit as found for the button array */
+    static void handle_button_bit(report_val_t *src, report_val_t *dst, hid_interface_t *iface) {
+        _store(src, dst, iface);
+    }
+
+    /* Extract keyboard data values */
+    static void handle_keyboard_descriptor_values(report_val_t *src, report_val_t *dst, hid_interface_t *iface) {
+        if (src->usage_page == HID_USAGE_PAGE_KEYBOARD) {
+            if (src->data_type == VARIABLE) {
+                _store(src, &iface->keyboard.modifier, iface);
+                iface->keyboard.is_found = true;
+            }
+
+            else if (src->data_type == ARRAY) {
+                // Calculate key press count
+                _store(src, &iface->keyboard.nkro, iface);
+                iface->keyboard.is_found = true;
+                iface->keyboard.is_nkro = false;
+            }
+
+            /* Remember the report ID for sending responses back */
+            iface->keyboard.report_id = src->report_id;
+        }
+    }
+
+    static void handle_consumer_control_values(report_val_t *src, report_val_t *dst, hid_interface_t *iface) {
+        if (src->usage_page == HID_USAGE_PAGE_CONSUMER) {
+            _store(src, dst, iface);
+            iface->consumer.is_variable = (src->data_type == VARIABLE);
+            iface->consumer.is_array = (src->data_type == ARRAY);
+            iface->consumer.report_id = src->report_id;
+        }
+    }
+
+    /* Create an array of complex HID value mappings */
     const usage_map_t map[] = {
-        {.usage_page   = HID_USAGE_PAGE_BUTTON,
-         .global_usage = HID_USAGE_DESKTOP_MOUSE,
-         .handler      = handle_buttons,
-         .receiver     = process_mouse_report,
-         .dst          = &iface->mouse.buttons,
-         .id           = &iface->mouse.report_id},
+        /* Map mouse buttons */
+        usage_map_t{
+            /* global_usage */ HID_USAGE_DESKTOP_MOUSE,
+            /* usage_page */ HID_USAGE_PAGE_BUTTON,
+            /* usage */ 0,
+            /* id */ &iface->mouse.report_id,
+            /* dst */ &iface->mouse.buttons,
+            /* handler */ handle_button_bit,
+            /* receiver */ process_mouse_report
+        },
 
-        {.usage_page   = HID_USAGE_PAGE_DESKTOP,
-         .global_usage = HID_USAGE_DESKTOP_MOUSE,
-         .usage        = HID_USAGE_DESKTOP_X,
-         .handler      = _store,
-         .receiver     = process_mouse_report,
-         .dst          = &iface->mouse.move_x,
-         .id           = &iface->mouse.report_id},
+        /* Map mouse X axis */
+        usage_map_t{
+            /* global_usage */ HID_USAGE_DESKTOP_MOUSE,
+            /* usage_page */ HID_USAGE_PAGE_DESKTOP,
+            /* usage */ HID_USAGE_DESKTOP_X,
+            /* id */ &iface->mouse.report_id,
+            /* dst */ &iface->mouse.move_x,
+            /* handler */ _store,
+            /* receiver */ process_mouse_report
+        },
 
-        {.usage_page   = HID_USAGE_PAGE_DESKTOP,
-         .global_usage = HID_USAGE_DESKTOP_MOUSE,
-         .usage        = HID_USAGE_DESKTOP_Y,
-         .handler      = _store,
-         .receiver     = process_mouse_report,
-         .dst          = &iface->mouse.move_y,
-         .id           = &iface->mouse.report_id},
+        /* Map mouse Y axis */
+        usage_map_t{
+            /* global_usage */ HID_USAGE_DESKTOP_MOUSE,
+            /* usage_page */ HID_USAGE_PAGE_DESKTOP,
+            /* usage */ HID_USAGE_DESKTOP_Y,
+            /* id */ &iface->mouse.report_id,
+            /* dst */ &iface->mouse.move_y,
+            /* handler */ _store,
+            /* receiver */ process_mouse_report
+        },
 
-        {.usage_page   = HID_USAGE_PAGE_DESKTOP,
-         .global_usage = HID_USAGE_DESKTOP_MOUSE,
-         .usage        = HID_USAGE_DESKTOP_WHEEL,
-         .handler      = _store,
-         .receiver     = process_mouse_report,
-         .dst          = &iface->mouse.wheel,
-         .id           = &iface->mouse.report_id},
+        /* Map mouse scroll wheel */
+        usage_map_t{
+            /* global_usage */ HID_USAGE_DESKTOP_MOUSE,
+            /* usage_page */ HID_USAGE_PAGE_DESKTOP,
+            /* usage */ HID_USAGE_DESKTOP_WHEEL,
+            /* id */ &iface->mouse.report_id,
+            /* dst */ &iface->mouse.wheel,
+            /* handler */ _store,
+            /* receiver */ process_mouse_report
+        },
 
-        {.usage_page   = HID_USAGE_PAGE_CONSUMER,
-         .global_usage = HID_USAGE_DESKTOP_MOUSE,
-         .usage        = HID_USAGE_CONSUMER_AC_PAN,
-         .handler      = _store,
-         .receiver     = process_mouse_report,
-         .dst          = &iface->mouse.pan,
-         .id           = &iface->mouse.report_id},
+        /* Map mouse horizontal scroll (pan) */
+        usage_map_t{
+            /* global_usage */ HID_USAGE_DESKTOP_MOUSE,
+            /* usage_page */ HID_USAGE_PAGE_CONSUMER,
+            /* usage */ HID_USAGE_CONSUMER_AC_PAN,
+            /* id */ &iface->mouse.report_id,
+            /* dst */ &iface->mouse.pan,
+            /* handler */ _store,
+            /* receiver */ process_mouse_report
+        },
 
-        {.usage_page   = HID_USAGE_PAGE_KEYBOARD,
-         .global_usage = HID_USAGE_DESKTOP_KEYBOARD,
-         .handler      = handle_keyboard_descriptor_values,
-         .receiver     = process_keyboard_report,
-         .id           = &iface->keyboard.report_id},
+        /* Map keyboard */
+        usage_map_t{
+            /* global_usage */ HID_USAGE_DESKTOP_KEYBOARD,
+            /* usage_page */ HID_USAGE_PAGE_KEYBOARD,
+            /* usage */ 0,
+            /* id */ &iface->keyboard.report_id,
+            /* dst */ nullptr,
+            /* handler */ handle_keyboard_descriptor_values,
+            /* receiver */ process_keyboard_report
+        },
 
-        {.usage_page   = HID_USAGE_PAGE_CONSUMER,
-         .global_usage = HID_USAGE_CONSUMER_CONTROL,
-         .handler      = handle_consumer_control_values,
-         .receiver     = process_consumer_report,
-         .dst          = &iface->consumer.val,
-         .id           = &iface->consumer.report_id},
+        /* Map consumer control */
+        usage_map_t{
+            /* global_usage */ HID_USAGE_CONSUMER_CONTROL,
+            /* usage_page */ HID_USAGE_PAGE_CONSUMER,
+            /* usage */ 0,
+            /* id */ &iface->consumer.report_id,
+            /* dst */ &iface->consumer.val,
+            /* handler */ handle_consumer_control_values,
+            /* receiver */ process_consumer_report
+        },
 
-        {.usage_page   = HID_USAGE_PAGE_DESKTOP,
-         .global_usage = HID_USAGE_DESKTOP_SYSTEM_CONTROL,
-         .handler      = _store,
-         .receiver     = process_system_report,
-         .dst          = &iface->system.val,
-         .id           = &iface->system.report_id},
+        /* Map system control */
+        usage_map_t{
+            /* global_usage */ HID_USAGE_DESKTOP_SYSTEM_CONTROL,
+            /* usage_page */ HID_USAGE_PAGE_DESKTOP,
+            /* usage */ 0,
+            /* id */ &iface->system.report_id,
+            /* dst */ &iface->system.val,
+            /* handler */ _store,
+            /* receiver */ process_system_report
+        },
     };
 
     /* We extracted all we could find in the descriptor to report_values, now go through them and
@@ -200,101 +230,49 @@ void extract_data(hid_interface_t *iface, report_val_t *val) {
         bool usages_match        = (val->usage == hay->usage) || (hay->usage == 0);
         bool usage_pages_match   = (val->usage_page == hay->usage_page) || (hay->usage_page == 0);
 
+        if (val->item_type == CONSTANT)
+            continue;
+
+        /* If we have a complete match */
         if (global_usages_match && usages_match && usage_pages_match) {
+            /* Invoke the data handler for that field (store it directly or do some manipulations) */
             hay->handler(val, hay->dst, iface);
-            *hay->id = val->report_id;
 
-            if (val->report_id < MAX_REPORTS)
-                iface->report_handler[val->report_id] = hay->receiver;
+            /* Mark the corresponding report ID as a identifier for this handler */
+            iface->report_handler[val->report_id] = hay->receiver;
+
+            break;
         }
     }
 }
 
-int32_t extract_bit_variable(report_val_t *kbd, uint8_t *raw_report, int len, uint8_t *dst) {
-    int key_count = 0;
-    int bit_offset = kbd->offset & 0b111;
-
-    for (int i = kbd->usage_min, j = bit_offset; i <= kbd->usage_max && key_count < len; i++, j++) {
-        int byte_index = j >> 3;
-        int bit_index  = j & 0b111;
-
-        if (raw_report[byte_index] & (1 << bit_index)) {
-            dst[key_count++] = i;
-        }
+/* Given a receiver function and report ID, verify this is a valid HID report handler */
+process_report_f get_report_handler(hid_interface_t *iface, uint8_t report_id) {
+    for (int i = 0; i < MAX_REPORTS; i++) {
+        if (iface->report_handler[i] != NULL && (i == report_id || !iface->uses_report_id || report_id == 0))
+            return iface->report_handler[i];
     }
 
-    return key_count;
+    // This might happen when the report doesn't use a report ID, e.g. has only one report
+    return NULL;
 }
 
-int32_t _extract_kbd_boot(uint8_t *raw_report, int len, hid_keyboard_report_t *report) {
-    uint8_t *src = raw_report;
+/* Extract a variable from a bit field report */
+int32_t extract_bit_variable(report_val_t *val, uint8_t *report, int len, uint8_t *report_id) {
+    if (report == NULL || val == NULL)
+        return 0;
 
-    /* In case keyboard still uses report ID in this, just pick the last 8 bytes */
-    if (len == KBD_REPORT_LENGTH + 1)
-        src++;
+    /* If a report ID is defined, it has to be the first byte of the report */
+    if (val->report_id > 0 && report[0] != val->report_id)
+        return 0;
 
-    memcpy(report, src, KBD_REPORT_LENGTH);
-    return KBD_REPORT_LENGTH;
-}
+    /* If the report uses an ID, store it for later use */
+    if (report_id)
+        *report_id = val->report_id;
 
-int32_t _extract_kbd_other(uint8_t *raw_report, int len, hid_interface_t *iface, hid_keyboard_report_t *report) {
-    uint8_t *src = raw_report;
-    keyboard_t *kb = &iface->keyboard;
+    /* The data offset has to be adjusted if a report ID is included */
+    uint16_t offset = (val->report_id > 0) ? val->offset + 8 : val->offset;
 
-    if (iface->uses_report_id)
-        src++;
-
-    report->modifier = src[kb->modifier.offset_idx];
-    for (int i=0, j=0; i < MAX_KEYS && j < KEYS_IN_USB_REPORT; i++) {
-        if(kb->key_array[i])
-            report->keycode[j++] = src[i];
-    }
-
-    return KBD_REPORT_LENGTH;
-}
-
-int32_t _extract_kbd_nkro(uint8_t *raw_report, int len, hid_interface_t *iface, hid_keyboard_report_t *report) {
-    uint8_t *ptr = raw_report;
-    keyboard_t *kb = &iface->keyboard;
-
-    /* Skip report ID */
-    if (iface->uses_report_id)
-        ptr++;
-
-    /* We expect array of bits mapping 1:1 from usage_min to usage_max, otherwise panic */
-    if ((kb->nkro.usage_max - kb->nkro.usage_min + 1) != kb->nkro.size)
-        return -1;
-
-    /* We expect modifier to be 8 bits long, otherwise we'll fallback to boot mode */
-    if (kb->modifier.size == MODIFIER_BIT_LENGTH) {
-        report->modifier = ptr[kb->modifier.offset_idx];
-    } else
-        return -1;
-
-    /* Move the pointer to the nkro offset's byte index */
-    ptr = &ptr[kb->nkro.offset_idx];
-
-    return extract_bit_variable(&kb->nkro, ptr, KEYS_IN_USB_REPORT, report->keycode);
-}
-
-int32_t extract_kbd_data(
-    uint8_t *raw_report, int len, uint8_t itf, hid_interface_t *iface, hid_keyboard_report_t *report) {
-
-    /* Clear the report to start fresh */
-    memset(report, 0, KBD_REPORT_LENGTH);
-
-    /* If we're in boot protocol mode, then it's easy to decide. */
-    if (iface->protocol == HID_PROTOCOL_BOOT)
-        return _extract_kbd_boot(raw_report, len, report);
-
-    /* NKRO is a special case */
-    if (iface->keyboard.is_nkro)
-        return _extract_kbd_nkro(raw_report, len, iface, report);
-
-    /* If we're getting 8 bytes of report, it's safe to assume standard modifier + reserved + keys */
-    if (len == KBD_REPORT_LENGTH || len == KBD_REPORT_LENGTH + 1)
-        return _extract_kbd_boot(raw_report, len, report);
-
-    /* This is something completely different, look at the report  */
-    return _extract_kbd_other(raw_report, len, iface, report);
+    /* Do the actual extraction */
+    return get_report_value(report, len, val);
 }
