@@ -349,12 +349,10 @@ void handle_heartbeat_msg(uart_packet_t *packet, device_t *state) {
         return;
 
     /* It is? Ok, kick off the firmware upgrade */
-    state->fw = (fw_upgrade_state_t) {
-        .upgrade_in_progress = true,
-        .byte_done = true,
-        .address = 0,
-        .checksum = 0xffffffff,
-    };
+    state->fw.upgrade_in_progress = true;
+    state->fw.byte_done = true;
+    state->fw.address = 0;
+    state->fw.checksum = 0xffffffff;
 }
 
 
