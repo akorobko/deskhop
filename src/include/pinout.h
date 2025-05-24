@@ -1,8 +1,5 @@
 /*
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 
  * This file is part of DeskHop (https://github.com/hrvach/deskhop).
  * Copyright (c) 2025 Hrvoje Cavrak
@@ -44,6 +41,3 @@ extern "C" {
 #define SERIAL_RX_PIN (global_state.board_role == OUTPUT_A ? BOARD_A_RX : BOARD_B_RX)
 #define SERIAL_TX_PIN (global_state.board_role == OUTPUT_A ? BOARD_A_TX : BOARD_B_TX)
 
-#ifdef __cplusplus
-}
-#endif

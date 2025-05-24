@@ -12,10 +12,6 @@
 
 #include "structs.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 /*==============================================================================
  *  Core Task Scheduling
  *==============================================================================*/
@@ -38,7 +34,3 @@ void process_uart_tx_task(device_t *);
 void screensaver_task(device_t *);
 void usb_device_task(device_t *);
 void usb_host_task(device_t *);
-
-#ifdef __cplusplus
-}
-#endif

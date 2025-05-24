@@ -1,8 +1,5 @@
 /*
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 
  * This file is part of DeskHop (https://github.com/hrvach/deskhop).
  * Copyright (c) 2025 Hrvoje Cavrak
@@ -33,6 +30,3 @@ void queue_mouse_report(mouse_report_t *, device_t *);
 bool tud_mouse_report(uint8_t mode, uint8_t buttons, int16_t x, int16_t y, int8_t wheel, int8_t pan);
 void output_mouse_report(mouse_report_t *, device_t *);
 
-#ifdef __cplusplus
-}
-#endif

@@ -9,6 +9,7 @@
  * See the file LICENSE for the full license text.
  */
 #include "main.h"
+#include "c_cpp_compat.h"
 
 /*********  Global Variables  **********/
 device_t global_state     = {0};

@@ -1,8 +1,5 @@
 /*
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 
  * This file is part of DeskHop (https://github.com/hrvach/deskhop).
  * Copyright (c) 2025 Hrvoje Cavrak
@@ -24,6 +21,3 @@ extern "C" {
 #define MAGIC_WORD_1 0xdeadf00f // When these are set, we'll boot to configuration mode
 #define MAGIC_WORD_2 0x00c0ffee
 
-#ifdef __cplusplus
-}
-#endif

@@ -14,10 +14,6 @@
 #include "structs.h"
 #include "hid_parser.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 /*==============================================================================
  *  Data Extraction
  *==============================================================================*/
@@ -44,10 +40,6 @@ void     queue_system_packet(uint8_t *, device_t *);
 void     release_all_keys(device_t *);
 void     send_consumer_control(uint8_t *, device_t *);
 void     send_key(hid_keyboard_report_t *, device_t *);
-
-#ifdef __cplusplus
-}
-#endif
 
 /* ==================================================== *
  * Map hotkeys to alternative layouts

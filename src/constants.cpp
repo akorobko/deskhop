@@ -9,6 +9,7 @@
  * See the file LICENSE for the full license text.
  */
 #include "main.h"
+#include "c_cpp_compat.h"
 
 /* CRC32 Lookup Table, Polynomial = 0xEDB88320 */
 const uint32_t crc32_lookup_table[] = {

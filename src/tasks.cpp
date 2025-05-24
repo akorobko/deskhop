@@ -10,6 +10,7 @@
  */
 
 #include "main.h"
+#include "c_cpp_compat.h"
 
 void task_scheduler(device_t *state, task_t *task) {
     uint64_t current_time = time_us_64();

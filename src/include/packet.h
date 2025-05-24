@@ -1,8 +1,5 @@
 /*
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 
  * This file is part of DeskHop (https://github.com/hrvach/deskhop).
  * Copyright (c) 2025 Hrvoje Cavrak
@@ -64,6 +61,3 @@ extern "C" {
     uint8_t checksum; // Checksum, a simple XOR-based one
 } __attribute__((packed)) uart_packet_t;
 
-#ifdef __cplusplus
-}
-#endif

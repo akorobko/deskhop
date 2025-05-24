@@ -1,8 +1,5 @@
 /*
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 
  * This file is part of DeskHop (https://github.com/hrvach/deskhop).
  * Copyright (c) 2025 Hrvoje Cavrak
@@ -37,6 +34,3 @@ extern uint8_t uart_txbuf[DMA_TX_BUFFER_SIZE] __attribute__((aligned(DMA_TX_BUFF
 
 #define NEXT_RING_IDX(x) ((x + 1) & 0x3FF)
 
-#ifdef __cplusplus
-}
-#endif

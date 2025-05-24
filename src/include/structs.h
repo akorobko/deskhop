@@ -10,19 +10,11 @@
  */
 #pragma once
 
-#ifdef __cplusplus
-# include <cstdint>
-#else
-# include <stdint.h>
-#endif
 
 #include "flash.h"
 #include "packet.h"
 #include "screen.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 typedef void (*action_handler_t)();
 
@@ -192,6 +184,3 @@ extern const uint8_t ADDR_FW_RUNNING[];
 extern const uint8_t ADDR_FW_STAGING[];
 extern const uint8_t ADDR_DISK_IMAGE[];
 
-#ifdef __cplusplus
-}
-#endif

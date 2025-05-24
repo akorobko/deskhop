@@ -1,8 +1,5 @@
 /*
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 
  * This file is part of DeskHop (https://github.com/hrvach/deskhop).
  * Copyright (c) 2025 Hrvoje Cavrak
@@ -37,6 +34,3 @@ typedef struct {
     process_report_f receiver;
 } usage_map_t;
 
-#ifdef __cplusplus
-}
-#endif

@@ -9,6 +9,7 @@
  * See the file LICENSE for the full license text.
  */
 #include "main.h"
+#include "c_cpp_compat.h"
 
 /* Default configuration */
 const config_t default_config = {

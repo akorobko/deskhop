@@ -12,6 +12,7 @@
  * See the file LICENSE for the full license text.
  */
 #include "main.h"
+#include "c_cpp_compat.h"
 
 #define IS_BLOCK_END (parser->collection.start == parser->collection.end)
 

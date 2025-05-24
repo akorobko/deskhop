@@ -9,6 +9,7 @@
  * See the file LICENSE for the full license text.
  */
 #include "main.h"
+#include "c_cpp_compat.h"
 
 const field_map_t api_field_map[] = {
 /* Index, Rdonly, Type, Len, Offset in struct */

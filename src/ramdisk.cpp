@@ -11,6 +11,7 @@
  */
 
 #include "main.h"
+#include "c_cpp_compat.h"
 
 #define NUMBER_OF_BLOCKS 4096
 #define ACTUAL_NUMBER_OF_BLOCKS 128

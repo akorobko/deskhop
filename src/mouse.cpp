@@ -10,6 +10,7 @@
  */
 
 #include "main.h"
+#include "c_cpp_compat.h"
 #include <math.h>
 
 #define MACOS_SWITCH_MOVE_X 10

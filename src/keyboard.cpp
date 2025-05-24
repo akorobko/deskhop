@@ -10,6 +10,7 @@
  */
 
 #include "main.h"
+#include "c_cpp_compat.h"
 
 /* ==================================================== *
  * Hotkeys to trigger actions via the keyboard.

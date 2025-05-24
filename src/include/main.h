@@ -26,6 +26,29 @@
 # include <string.h>
 #endif
 
+// Project headers without extern "C" wrapper
+#include "constants.h"
+#include "misc.h"
+#include "structs.h"
+#include "config.h"
+#include "hid_parser.h"
+#include "usb_descriptors.h"
+#include "user_config.h"
+#include "protocol.h"
+#include "dma.h"
+#include "firmware.h"
+#include "flash.h"
+#include "handlers.h"
+#include "keyboard.h"
+#include "mouse.h"
+#include "packet.h"
+#include "pinout.h"
+#include "screen.h"
+#include "serial.h"
+#include "setup.h"
+#include "tasks.h"
+#include "watchdog.h"
+
 // External C libraries that need C linkage
 #ifdef __cplusplus
 extern "C" {
@@ -48,26 +71,3 @@ extern "C" {
 #ifdef __cplusplus
 }
 #endif
-
-// Project headers
-#include "hid_parser.h"
-#include "constants.h"
-#include "misc.h"
-#include "structs.h"
-#include "config.h"
-#include "usb_descriptors.h"
-#include "user_config.h"
-#include "protocol.h"
-#include "dma.h"
-#include "firmware.h"
-#include "flash.h"
-#include "handlers.h"
-#include "keyboard.h"
-#include "mouse.h"
-#include "packet.h"
-#include "pinout.h"
-#include "screen.h"
-#include "serial.h"
-#include "setup.h"
-#include "tasks.h"
-#include "watchdog.h"

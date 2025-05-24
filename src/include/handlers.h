@@ -1,8 +1,5 @@
 /*
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 
  * This file is part of DeskHop (https://github.com/hrvach/deskhop).
  * Copyright (c) 2025 Hrvoje Cavrak
@@ -73,6 +70,3 @@ void handle_write_fw_msg(uart_packet_t *, device_t *);
 
 void set_active_output(device_t *, uint8_t);
 
-#ifdef __cplusplus
-}
-#endif

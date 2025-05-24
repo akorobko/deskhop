@@ -1,8 +1,5 @@
 /*
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 
  * This file is part of DeskHop (https://github.com/hrvach/deskhop).
  * Copyright (c) 2025 Hrvoje Cavrak
@@ -80,6 +77,3 @@ typedef struct {
 #define UF2_MAGIC_START1 0x9E5D5157
 #define UF2_MAGIC_END    0x0AB16F30
 
-#ifdef __cplusplus
-}
-#endif

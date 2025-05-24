@@ -1,8 +1,5 @@
 /*
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 
  * This file is part of DeskHop (https://github.com/hrvach/deskhop).
  * Copyright (c) 2025 Hrvoje Cavrak
@@ -164,6 +161,3 @@ extern int dh_debug_printf(const char *__restrict __format, ...);
 
 #endif /* _TUSB_CONFIG_H_ */
 
-#ifdef __cplusplus
-}
-#endif

@@ -10,6 +10,7 @@
  */
 #include "hid_report.h"
 #include "main.h"
+#include "c_cpp_compat.h"
 
 /* Given a value struct with size and offset in bits, find and return a value from the HID report */
 int32_t get_report_value(uint8_t *report, int len, report_val_t *val) {
