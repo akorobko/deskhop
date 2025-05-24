@@ -1623,32 +1623,11 @@ img {
 <label class="label-inline"> Hotkey Toggle</label>
 
 
-    <select class="api" data-type="uint8" data-key="74" required onchange="valueChangedHandler(this)">
-    <option disabled selected value></option>
-
-    <option value="57">Caps Lock</option>
-    <option value="58">F1</option>
-    <option value="59">F2</option>
-    <option value="60">F3</option>
-    <option value="61">F4</option>
-    <option value="62">F5</option>
-    <option value="63">F6</option>
-    <option value="64">F7</option>
-    <option value="65">F8</option>
-    <option value="66">F9</option>
-    <option value="67">F10</option>
-    <option value="68">F11</option>
-    <option value="69">F12</option>
-    <option value="70">Print Screen</option>
-    <option value="71">Scroll Lock</option>
-    <option value="72">Pause</option>
-    <option value="116">Ins</option>
-    <option value="117">Del</option>
-    <option value="118">Home</option>
-    <option value="119">End</option>
-    <option value="120">Page Up</option>
-    <option value="121">Page Down</option>
-    </select>
+    <input type="text" class="api" data-type="uint8" data-key="74" required readonly
+           placeholder="Click here and press any key" 
+           id="hotkey-toggle-input"
+           onfocus="this.setAttribute('capturing', 'true')"
+           onblur="this.removeAttribute('capturing')">
 
   </div>
 
@@ -1834,10 +1813,16 @@ function packValue(element, key, dataType, buffer) {
 
   if (dataType in methods) {
     const method = methods[dataType];
-    if (element.type === 'checkbox')
+    if (element.type === 'checkbox') {
       view.setUint8(dataOffset, element.checked ? 1 : 0, true);
-    else
+    }
+    else if (element.id === 'hotkey-toggle-input' && element.hasAttribute('data-value')) {
+      // Use the data-value attribute for the hotkey toggle input
+      method.call(view, dataOffset, parseInt(element.getAttribute('data-value')), true);
+    }
+    else {
       method.call(view, dataOffset, element.value, true);
+    }
   }
 
   view.setUint8(0, key);
@@ -1881,6 +1866,11 @@ async function blinkBothHandler() {
 }
 
 function getValue(element) {
+  // Special handling for the hotkey toggle input
+  if (element.id === 'hotkey-toggle-input' && element.hasAttribute('data-value')) {
+    return element.getAttribute('data-value');
+  }
+  
   if (element.type === 'checkbox')
     return element.checked ? 1 : 0;
   else
@@ -1890,11 +1880,27 @@ function getValue(element) {
 function setValue(element, value) {
   element.setAttribute('fetched-value', value);
 
-  if (element.type === 'checkbox')
+  if (element.type === 'checkbox') {
     element.checked = value;
-  else
+  }
+  else if (element.id === 'hotkey-toggle-input') {
+    // For the hotkey input, we need to display a human-readable key name
+    element.setAttribute('data-value', value);
+    
+    // Try to find the key code by HID value
+    const keyCodeEntry = Object.entries(hidKeyCodes).find(entry => entry[1] == value);
+    if (keyCodeEntry) {
+      const keyCode = keyCodeEntry[0];
+      element.value = getDisplayName(keyCode);
+    } else {
+      // If we can't find it, show the numeric value
+      element.value = `Key (${value})`;
+    }
+  }
+  else {
     element.value = value;
     element.dispatchEvent(new Event('input', { bubbles: true }));
+  }
 }
 
 
@@ -1948,12 +1954,123 @@ async function enterBootloaderHandler() {
   await sendReport(packetType.firmwareUpgradeMsg, true, true);
 }
 
+// HID Key codes mapping
+const hidKeyCodes = {
+  // Letter keys
+  'KeyA': 4, 'KeyB': 5, 'KeyC': 6, 'KeyD': 7, 'KeyE': 8, 'KeyF': 9, 
+  'KeyG': 10, 'KeyH': 11, 'KeyI': 12, 'KeyJ': 13, 'KeyK': 14, 'KeyL': 15, 
+  'KeyM': 16, 'KeyN': 17, 'KeyO': 18, 'KeyP': 19, 'KeyQ': 20, 'KeyR': 21, 
+  'KeyS': 22, 'KeyT': 23, 'KeyU': 24, 'KeyV': 25, 'KeyW': 26, 'KeyX': 27, 
+  'KeyY': 28, 'KeyZ': 29,
+  
+  // Number keys
+  'Digit1': 30, 'Digit2': 31, 'Digit3': 32, 'Digit4': 33, 'Digit5': 34, 
+  'Digit6': 35, 'Digit7': 36, 'Digit8': 37, 'Digit9': 38, 'Digit0': 39,
+  
+  // Function keys
+  'F1': 58, 'F2': 59, 'F3': 60, 'F4': 61, 'F5': 62, 'F6': 63,
+  'F7': 64, 'F8': 65, 'F9': 66, 'F10': 67, 'F11': 68, 'F12': 69,
+  
+  // Special keys
+  'Enter': 40, 'Escape': 41, 'Backspace': 42, 'Tab': 43, 'Space': 44,
+  'Minus': 45, 'Equal': 46, 'BracketLeft': 47, 'BracketRight': 48,
+  'Backslash': 49, 'Semicolon': 51, 'Quote': 52, 'Backquote': 53,
+  'Comma': 54, 'Period': 55, 'Slash': 56,
+  'CapsLock': 57, 'ScrollLock': 71, 'Pause': 72,
+  'Insert': 73, 'Home': 74, 'PageUp': 75, 'Delete': 76, 'End': 77, 'PageDown': 78,
+  'ArrowRight': 79, 'ArrowLeft': 80, 'ArrowDown': 81, 'ArrowUp': 82,
+  'NumLock': 83, 'NumpadDivide': 84, 'NumpadMultiply': 85, 'NumpadSubtract': 86,
+  'NumpadAdd': 87, 'NumpadEnter': 88, 'Numpad1': 89, 'Numpad2': 90, 'Numpad3': 91,
+  'Numpad4': 92, 'Numpad5': 93, 'Numpad6': 94, 'Numpad7': 95, 'Numpad8': 96,
+  'Numpad9': 97, 'Numpad0': 98, 'NumpadDecimal': 99,
+  'PrintScreen': 70
+};
+
+// User-friendly key names
+const keyDisplayNames = {
+  // Use friendly names where different from code
+  'CapsLock': 'Caps Lock', 
+  'ScrollLock': 'Scroll Lock',
+  'ArrowUp': '↑', 'ArrowDown': '↓', 'ArrowLeft': '←', 'ArrowRight': '→',
+  'PageUp': 'Page Up', 'PageDown': 'Page Down',
+  'Backquote': '`', 'Minus': '-', 'Equal': '=', 
+  'BracketLeft': '[', 'BracketRight': ']', 'Backslash': '\\',
+  'Semicolon': ';', 'Quote': "'", 'Comma': ',', 'Period': '.', 'Slash': '/'
+};
+
+// Get user-friendly key name
+function getDisplayName(code) {
+  // For letter keys, just return the last character (A, B, C, etc.)
+  if (code.startsWith('Key')) {
+    return code.substring(3);
+  }
+  
+  // For digit keys, just return the last character (0, 1, 2, etc.)
+  if (code.startsWith('Digit')) {
+    return code.substring(5);
+  }
+  
+  // For numpad keys, format as "Num X"
+  if (code.startsWith('Numpad')) {
+    return 'Numpad ' + code.substring(6);
+  }
+  
+  // Use mapping for special keys
+  if (keyDisplayNames[code]) {
+    return keyDisplayNames[code];
+  }
+  
+  // Default to the code itself
+  return code;
+}
+
+// Add an event listener to capture any key press
+document.addEventListener('keydown', function(event) {
+  const hotkeyInput = document.getElementById('hotkey-toggle-input');
+  
+  // Only process if the hotkey input is focused and capturing
+  if (hotkeyInput && hotkeyInput.getAttribute('capturing') === 'true') {
+    event.preventDefault();
+    
+    // Get keyboard event code
+    const keyCode = event.code;
+    
+    // Find corresponding HID code
+    const hidCode = hidKeyCodes[keyCode];
+    
+    if (hidCode) {
+      // Display user-friendly name of the key
+      const keyName = getDisplayName(keyCode);
+      hotkeyInput.value = keyName;
+      
+      // Store the HID code as the input's value for form processing
+      hotkeyInput.setAttribute('data-value', hidCode);
+      
+      // Manually trigger value change handler
+      valueChangedHandler(hotkeyInput);
+    } else {
+      // If key not recognized, show a message
+      hotkeyInput.value = "Unsupported key";
+    }
+    
+    // Remove focus from input after key is captured
+    hotkeyInput.blur();
+  }
+});
+
 async function valueChangedHandler(element) {
   var key = element.getAttribute('data-key');
   var dataType = element.getAttribute('data-type');
 
   var origValue = element.getAttribute('fetched-value');
-  var newValue = getValue(element);
+  var newValue;
+  
+  // Special handling for hotkey-toggle-input
+  if (element.id === 'hotkey-toggle-input' && element.hasAttribute('data-value')) {
+    newValue = element.getAttribute('data-value');
+  } else {
+    newValue = getValue(element);
+  }
 
   if (origValue != newValue) {
     uintBuffer = packValue(element, key, dataType);
