@@ -1,4 +1,9 @@
 /*
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
  * This file is part of DeskHop (https://github.com/hrvach/deskhop).
  * Copyright (c) 2025 Hrvoje Cavrak
  *
@@ -32,3 +37,7 @@ void process_packet(uart_packet_t *, device_t *);
 void queue_packet(const uint8_t *, enum packet_type_e, int);
 void send_value(const uint8_t, enum packet_type_e);
 void write_raw_packet(uint8_t *, uart_packet_t *);
+
+#ifdef __cplusplus
+}
+#endif

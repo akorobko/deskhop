@@ -1,4 +1,9 @@
 /*
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
  * This file is part of DeskHop (https://github.com/hrvach/deskhop).
  * Copyright (c) 2025 Hrvoje Cavrak
  *
@@ -19,3 +24,7 @@
 void initial_setup(device_t *);
 void serial_init(void);
 void core1_main(void);
+
+#ifdef __cplusplus
+}
+#endif

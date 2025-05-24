@@ -1,4 +1,9 @@
 /*
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
  * This file is part of DeskHop (https://github.com/hrvach/deskhop).
  * Copyright (c) 2025 Hrvoje Cavrak
  *
@@ -62,3 +67,7 @@ typedef struct {
     uint32_t len;
     size_t offset;
 } field_map_t;
+
+#ifdef __cplusplus
+}
+#endif

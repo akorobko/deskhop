@@ -1,4 +1,9 @@
 /*
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
  * This file is part of DeskHop (https://github.com/hrvach/deskhop).
  * Copyright (c) 2025 Hrvoje Cavrak
  *
@@ -35,3 +40,7 @@ extern device_t global_state;
 void    blink_led(device_t *);
 void    restore_leds(device_t *);
 uint8_t toggle_led(void);
+
+#ifdef __cplusplus
+}
+#endif

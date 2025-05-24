@@ -1,4 +1,9 @@
 /*
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
  * This file is part of DeskHop (https://github.com/hrvach/deskhop).
  * Copyright (c) 2025 Hrvoje Cavrak
  *
@@ -45,3 +50,7 @@ void reset_config_timer(device_t *);
 void save_config(device_t *);
 bool validate_packet(uart_packet_t *);
 void wipe_config(void);
+
+#ifdef __cplusplus
+}
+#endif
