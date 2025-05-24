@@ -93,6 +93,9 @@ void load_config(device_t *state) {
     /* On any condition failing, we fall back to default config */
     if (magic_header_fail || checksum_fail || version_fail)
         memcpy(running_config, &default_config, sizeof(config_t));
+
+    /* Update hotkey configuration based on loaded config */
+    update_hotkey_config(state);
 }
 
 void save_config(device_t *state) {

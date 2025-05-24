@@ -16,9 +16,9 @@
  * ==================================================== */
 
 hotkey_combo_t hotkeys[] = {
-    /* Main keyboard switching hotkey */
-    {.modifier       = HOTKEY_MODIFIER,
-     .keys           = {HOTKEY_TOGGLE},
+    /* Main keyboard switching hotkey - actual values will come from config */
+    {.modifier       = 0, /* Will be set from config.hotkey_modifier */
+     .keys           = {0}, /* Will be set from config.hotkey_toggle */
      .key_count      = 1,
      .pass_to_os     = false,
      .action_handler = &output_toggle_hotkey_handler},
@@ -284,4 +284,13 @@ void process_system_report(uint8_t *raw_report, int length, uint8_t itf, hid_int
     uint8_t *report_ptr = (uint8_t *)&new_report;
 
     send_system_control(report_ptr, &global_state);
+}
+
+/* ==================================================== *
+ * Update hotkey configuration from device config
+ * ==================================================== */
+
+void update_hotkey_config(device_t *state) {
+    hotkeys[0].modifier = state->config.hotkey_modifier;
+    hotkeys[0].keys[0] = state->config.hotkey_toggle;
 }

@@ -58,14 +58,15 @@ const field_map_t api_field_map[] = {
     { 75, false, UINT8,  1, offsetof(device_t, config.enable_acceleration) },
     { 76, false, UINT8,  1, offsetof(device_t, config.enforce_ports) },
     { 77, false, UINT16, 2, offsetof(device_t, config.jump_threshold) },
+    { 78, false, UINT8,  1, offsetof(device_t, config.hotkey_modifier) },
 
     /* Firmware */
-    { 78, true,  UINT16, 2, offsetof(device_t, _running_fw.version) },
-    { 79, true,  UINT32, 4, offsetof(device_t, _running_fw.checksum) },
+    { 79, true,  UINT16, 2, offsetof(device_t, _running_fw.version) },
+    { 80, true,  UINT32, 4, offsetof(device_t, _running_fw.checksum) },
 
-    { 80, true,  UINT8,  1, offsetof(device_t, keyboard_connected) },
-    { 81, true,  UINT8,  1, offsetof(device_t, switch_lock) },
-    { 82, true,  UINT8,  1, offsetof(device_t, relative_mouse) },
+    { 81, true,  UINT8,  1, offsetof(device_t, keyboard_connected) },
+    { 82, true,  UINT8,  1, offsetof(device_t, switch_lock) },
+    { 83, true,  UINT8,  1, offsetof(device_t, relative_mouse) },
 };
 
 const field_map_t* get_field_map_entry(uint32_t index) {

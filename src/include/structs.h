@@ -74,6 +74,7 @@ typedef struct {
 
     uint8_t kbd_led_as_indicator;
     uint8_t hotkey_toggle;
+    uint8_t hotkey_modifier;
     uint8_t enable_acceleration;
 
     uint8_t enforce_ports;
