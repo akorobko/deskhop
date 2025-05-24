@@ -41,22 +41,21 @@ void update_usage(parser_state_t *parser, int i) {
 }
 
 void store_element(parser_state_t *parser, report_val_t *val, int i, uint32_t data, uint16_t size, hid_interface_t *iface) {
-    *val = (report_val_t){
-        .offset     = parser->offset_in_bits,
-        .offset_idx = parser->offset_in_bits >> 3,
-        .size       = size,
-
-        .usage_max = parser->locals[RI_LOCAL_USAGE_MAX].val,
-        .usage_min = parser->locals[RI_LOCAL_USAGE_MIN].val,
-
-        .item_type   = (data & 0x01) ? CONSTANT : DATA,
-        .data_type   = (data & 0x02) ? VARIABLE : ARRAY,
-
-        .usage        = *(parser->p_usage + i),
-        .usage_page   = parser->globals[RI_GLOBAL_USAGE_PAGE].val,
-        .global_usage = parser->global_usage,
-        .report_id    = parser->report_id
-    };
+    // Initialize report value fields
+    val->offset = static_cast<uint16_t>(parser->offset_in_bits);
+    val->offset_idx = static_cast<uint16_t>(parser->offset_in_bits >> 3);
+    val->size = size;
+    
+    val->usage_min = static_cast<int32_t>(parser->locals[RI_LOCAL_USAGE_MIN].val);
+    val->usage_max = static_cast<int32_t>(parser->locals[RI_LOCAL_USAGE_MAX].val);
+    
+    val->item_type = (data & 0x01) ? CONSTANT : DATA;
+    val->data_type = (data & 0x02) ? VARIABLE : ARRAY;
+    
+    val->usage = *(parser->p_usage + i);
+    val->usage_page = parser->globals[RI_GLOBAL_USAGE_PAGE].val;
+    val->global_usage = parser->global_usage;
+    val->report_id = parser->report_id;
 
     iface->uses_report_id |= (parser->report_id != 0);
 }
