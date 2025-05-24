@@ -11,28 +11,54 @@
 
 #pragma once
 
-#include <stdarg.h>
-#include <stdbool.h>
-#include <stdint.h>
-#include <stdlib.h>
-#include <string.h>
+// C++ compatibility
+#ifdef __cplusplus
+# include <cstdarg>
+# include <cstdbool>
+# include <cstdint>
+# include <cstdlib>
+# include <cstring>
+#else
+# include <stdarg.h>
+# include <stdbool.h>
+# include <stdint.h>
+# include <stdlib.h>
+# include <string.h>
+#endif
+
+// External C libraries that need C linkage
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #include <pico/util/queue.h>
-#include "hid_parser.h"
+#include "pio_usb.h"
+#include "tusb.h"
+#include <hardware/structs/ioqspi.h>
+#include <hardware/structs/sio.h>
+#include <hardware/dma.h>
+#include <hardware/flash.h>
+#include <hardware/sync.h>
+#include <hardware/watchdog.h>
+#include <pico/bootrom.h>
+#include <pico/multicore.h>
+#include <pico/stdlib.h>
+#include <pico/unique_id.h>
 
+#ifdef __cplusplus
+}
+#endif
+
+// Project headers
+#include "hid_parser.h"
 #include "constants.h"
 #include "misc.h"
 #include "structs.h"
 #include "config.h"
-
-#include "pio_usb.h"
-#include "tusb.h"
 #include "usb_descriptors.h"
 #include "user_config.h"
 #include "protocol.h"
-
 #include "dma.h"
-
 #include "firmware.h"
 #include "flash.h"
 #include "handlers.h"
@@ -45,15 +71,3 @@
 #include "setup.h"
 #include "tasks.h"
 #include "watchdog.h"
-
-
-#include <hardware/structs/ioqspi.h>
-#include <hardware/structs/sio.h>
-#include <hardware/dma.h>
-#include <hardware/flash.h>
-#include <hardware/sync.h>
-#include <hardware/watchdog.h>
-#include <pico/bootrom.h>
-#include <pico/multicore.h>
-#include <pico/stdlib.h>
-#include <pico/unique_id.h>
