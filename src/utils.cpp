@@ -141,10 +141,9 @@ bool is_bootsel_pressed(void) {
 }
 
 void request_byte(device_t *state, uint32_t address) {
-    uart_packet_t packet = {
-        .data32[0] = address,
-        .type = REQUEST_BYTE_MSG,
-    };
+    uart_packet_t packet;
+    packet.data32[0] = address;
+    packet.type = REQUEST_BYTE_MSG;
     state->fw.byte_done = false;
 
     queue_try_add(&global_state.uart_tx_queue, &packet);
