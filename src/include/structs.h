@@ -10,11 +10,19 @@
  */
 #pragma once
 
+// Include necessary types first
+#ifdef __cplusplus
+# include <cstdint>
+#else
+# include <stdint.h>
+#endif
 
+#include "tusb.h"
+#include <pico/util/queue.h>
+#include "hid_parser.h" // For hid_interface_t
 #include "flash.h"
 #include "packet.h"
 #include "screen.h"
-
 
 typedef void (*action_handler_t)();
 

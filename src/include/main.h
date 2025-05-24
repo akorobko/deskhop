@@ -26,12 +26,31 @@
 # include <string.h>
 #endif
 
-// Project headers without extern "C" wrapper
+// External C libraries that need C linkage
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#include <hardware/structs/ioqspi.h>
+#include <hardware/structs/sio.h>
+#include <hardware/dma.h>
+#include <hardware/flash.h>
+#include <hardware/sync.h>
+#include <hardware/watchdog.h>
+#include <pico/bootrom.h>
+#include <pico/multicore.h>
+#include <pico/stdlib.h>
+#include <pico/unique_id.h>
+
+#ifdef __cplusplus
+}
+#endif
+
+// Project headers
 #include "constants.h"
 #include "misc.h"
 #include "structs.h"
 #include "config.h"
-#include "hid_parser.h"
 #include "usb_descriptors.h"
 #include "user_config.h"
 #include "protocol.h"
@@ -48,26 +67,3 @@
 #include "setup.h"
 #include "tasks.h"
 #include "watchdog.h"
-
-// External C libraries that need C linkage
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-#include <pico/util/queue.h>
-#include "pio_usb.h"
-#include "tusb.h"
-#include <hardware/structs/ioqspi.h>
-#include <hardware/structs/sio.h>
-#include <hardware/dma.h>
-#include <hardware/flash.h>
-#include <hardware/sync.h>
-#include <hardware/watchdog.h>
-#include <pico/bootrom.h>
-#include <pico/multicore.h>
-#include <pico/stdlib.h>
-#include <pico/unique_id.h>
-
-#ifdef __cplusplus
-}
-#endif

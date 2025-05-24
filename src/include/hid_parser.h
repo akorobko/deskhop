@@ -12,7 +12,8 @@
  */
 #pragma once
 
-#include "main.h"
+#include "tusb.h"
+#include <pico/util/queue.h>
 #include "tusb.h"
 
 /*==============================================================================
