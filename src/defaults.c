@@ -59,6 +59,7 @@ const config_t default_config = {
     .force_mouse_boot_mode = false,
     .enable_acceleration = ENABLE_ACCELERATION,
     .hotkey_toggle = HOTKEY_TOGGLE,
+    .hotkey_modifier = HOTKEY_MODIFIER,
     .kbd_led_as_indicator = KBD_LED_AS_INDICATOR,
     .jump_threshold = JUMP_THRESHOLD,
 };

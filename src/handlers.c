@@ -293,6 +293,11 @@ void handle_api_msgs(uart_packet_t *packet, device_t *state) {
             return;
 
         memcpy(ptr, &packet->data[1], map->len);
+
+        /* Update hotkey config if either hotkey_toggle or hotkey_modifier was changed */
+        if (value_idx == 74 || value_idx == 78) {
+            update_hotkey_config(state);
+        }
     }
     else if (packet->type == GET_VAL_MSG) {
         uart_packet_t response = {.type=GET_VAL_MSG, .data={[0] = value_idx}};
