@@ -1,4 +1,6 @@
 /*
+
+
  * This file is part of DeskHop (https://github.com/hrvach/deskhop).
  * Copyright (c) 2025 Hrvoje Cavrak
  *
@@ -32,3 +34,4 @@ typedef struct {
     process_report_f receiver;
     report_id_getter_f get_id;
 } usage_map_t;
+

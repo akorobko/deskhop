@@ -1,4 +1,6 @@
 /*
+
+
  * This file is part of DeskHop (https://github.com/hrvach/deskhop).
  * Copyright (c) 2025 Hrvoje Cavrak
  *
@@ -58,3 +60,4 @@
     };
     uint8_t checksum; // Checksum, a simple XOR-based one
 } __attribute__((packed)) uart_packet_t;
+

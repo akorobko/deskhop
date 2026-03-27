@@ -1,4 +1,6 @@
 /*
+
+
  * This file is part of DeskHop (https://github.com/hrvach/deskhop).
  * Copyright (c) 2025 Hrvoje Cavrak
  *
@@ -62,3 +64,4 @@
 #define _TOP()  0
 #define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]))
 #define CURRENT_BOARD_IS_ACTIVE_OUTPUT (global_state.active_output == global_state.board_role)
+

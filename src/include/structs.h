@@ -10,7 +10,16 @@
  */
 #pragma once
 
-#include <stdint.h>
+// Include necessary types first
+#ifdef __cplusplus
+# include <cstdint>
+#else
+# include <stdint.h>
+#endif
+
+#include "tusb.h"
+#include <pico/util/queue.h>
+#include "hid_parser.h" // For hid_interface_t
 #include "flash.h"
 #include "packet.h"
 #include "screen.h"
@@ -187,3 +196,4 @@ extern const uint8_t ADDR_FW_METADATA[];
 extern const uint8_t ADDR_FW_RUNNING[];
 extern const uint8_t ADDR_FW_STAGING[];
 extern const uint8_t ADDR_DISK_IMAGE[];
+

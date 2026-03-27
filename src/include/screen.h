@@ -1,4 +1,6 @@
 /*
+
+
  * This file is part of DeskHop (https://github.com/hrvach/deskhop).
  * Copyright (c) 2025 Hrvoje Cavrak
  *
@@ -49,3 +51,4 @@ typedef struct {
     uint8_t mouse_park_pos;    // Where the mouse goes after switch
     screensaver_t screensaver; // Screensaver parameters for this output
 } output_t;
+

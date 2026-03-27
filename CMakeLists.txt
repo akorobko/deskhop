@@ -28,6 +28,7 @@ set(PICO_COPY_TO_RAM 1)
 
 ## Compiler Flags
 set(CMAKE_C_FLAGS "-Ofast -Wall -mcpu=cortex-m0plus -mtune=cortex-m0plus -fstack-usage")
+set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS}")
 
 ## Initialize Pico SDK
 pico_sdk_init()
@@ -53,23 +54,23 @@ target_include_directories(Pico-PIO-USB PRIVATE ${PICO_PIO_USB_DIR})
 
 ## Source Files
 set(COMMON_SOURCES
-  ${SRC_DIR}/usb_descriptors.c
-  ${SRC_DIR}/defaults.c
-  ${SRC_DIR}/constants.c
-  ${SRC_DIR}/protocol.c
-  ${SRC_DIR}/hid_parser.c
-  ${SRC_DIR}/hid_report.c
-  ${SRC_DIR}/utils.c
-  ${SRC_DIR}/handlers.c
-  ${SRC_DIR}/setup.c
-  ${SRC_DIR}/keyboard.c
-  ${SRC_DIR}/mouse.c
-  ${SRC_DIR}/tasks.c
-  ${SRC_DIR}/led.c
-  ${SRC_DIR}/uart.c
-  ${SRC_DIR}/usb.c
-  ${SRC_DIR}/main.c
-  ${SRC_DIR}/ramdisk.c
+  ${SRC_DIR}/usb_descriptors.cpp
+  ${SRC_DIR}/defaults.cpp
+  ${SRC_DIR}/constants.cpp
+  ${SRC_DIR}/protocol.cpp
+  ${SRC_DIR}/hid_parser.cpp
+  ${SRC_DIR}/hid_report.cpp
+  ${SRC_DIR}/utils.cpp
+  ${SRC_DIR}/handlers.cpp
+  ${SRC_DIR}/setup.cpp
+  ${SRC_DIR}/keyboard.cpp
+  ${SRC_DIR}/mouse.cpp
+  ${SRC_DIR}/tasks.cpp
+  ${SRC_DIR}/led.cpp
+  ${SRC_DIR}/uart.cpp
+  ${SRC_DIR}/usb.cpp
+  ${SRC_DIR}/main.cpp
+  ${SRC_DIR}/ramdisk.cpp
   ${PICO_TINYUSB_PATH}/src/portable/raspberrypi/pio_usb/dcd_pio_usb.c
   ${PICO_TINYUSB_PATH}/src/portable/raspberrypi/pio_usb/hcd_pio_usb.c
 )

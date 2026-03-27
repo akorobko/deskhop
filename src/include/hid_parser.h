@@ -1,4 +1,6 @@
 /*
+
+
  * This file is part of DeskHop (https://github.com/hrvach/deskhop).
  * Copyright (c) 2024 Hrvoje Cavrak
  *
@@ -10,7 +12,8 @@
  */
 #pragma once
 
-#include "main.h"
+#include "tusb.h"
+#include <pico/util/queue.h>
 #include "tusb.h"
 
 /*==============================================================================
@@ -172,3 +175,4 @@ typedef struct {
 } parser_state_t;
 
 ///////////////
+

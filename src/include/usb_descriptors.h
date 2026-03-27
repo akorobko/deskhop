@@ -1,4 +1,6 @@
 /*
+
+
  * This file is part of DeskHop (https://github.com/hrvach/deskhop).
  * Copyright (c) 2025 Hrvoje Cavrak
  *
@@ -199,3 +201,4 @@ HID_COLLECTION ( HID_COLLECTION_APPLICATION )               ,\
 HID_COLLECTION_END
 
 #endif /* USB_DESCRIPTORS_H_ */
+

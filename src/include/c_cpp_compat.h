@@ -1,6 +1,4 @@
 /*
-
-
  * This file is part of DeskHop (https://github.com/hrvach/deskhop).
  * Copyright (c) 2025 Hrvoje Cavrak
  *
@@ -10,15 +8,16 @@
  *
  * See the file LICENSE for the full license text.
  */
+
 #pragma once
 
-#include "structs.h"
+// Add C++ extern "C" guards around all C implementation files
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-/*==============================================================================
- *  Initialization Functions
- *==============================================================================*/
+// All function implementations here
 
-void initial_setup(device_t *);
-void serial_init(void);
-void core1_main(void);
-
+#ifdef __cplusplus
+}
+#endif

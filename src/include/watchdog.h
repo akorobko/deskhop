@@ -1,4 +1,6 @@
 /*
+
+
  * This file is part of DeskHop (https://github.com/hrvach/deskhop).
  * Copyright (c) 2025 Hrvoje Cavrak
  *
@@ -18,3 +20,4 @@
 
 #define MAGIC_WORD_1 0xdeadf00f // When these are set, we'll boot to configuration mode
 #define MAGIC_WORD_2 0x00c0ffee
+
